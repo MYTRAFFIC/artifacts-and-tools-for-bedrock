@@ -4,7 +4,6 @@ import { Construct } from "constructs";
 import { StackConfig } from "./types";
 import { Playground } from "./playground";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as lambdaPython from "@aws-cdk/aws-lambda-python-alpha";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -107,6 +106,11 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
                   actions: ["logs:CreateLogStream", "logs:PutLogEvents"],
                   resources: [codeInterpreterLogGroup.logGroupArn],
                 }),
+                new iam.PolicyStatement({
+                  effect: iam.Effect.ALLOW,
+                  actions: ["s3:Get*", "s3:List*"],
+                  resources: ["*"],
+                }),
               ],
             }),
           },
@@ -177,20 +181,20 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         }
       );
 
-      athenaQueryTool = new lambdaPython.PythonFunction(
+      athenaQueryTool = new lambda.DockerImageFunction(
         this,
         "AthenaQueryTool",
         {
-          entry: path.join(__dirname, "./tools/athena-query"),
-          runtime: lambda.Runtime.PYTHON_3_13,
+          code: lambda.DockerImageCode.fromImageAsset(
+            path.join(__dirname, "./tools/athena-query")
+          ),
           architecture: lambdaArchitecture,
           timeout: cdk.Duration.minutes(5),
-          memorySize: 512,
+          memorySize: 128,
           logGroup: athenaQueryLogGroup,
-          layers: [powerToolsLayer],
           environment: {
-            ATHENA_QUERY_RESULTS_LOCATION:
-              props.config.athenaQueryTool.resultsLocation || "",
+            ATHENA_WORKGROUP:
+              props.config.athenaQueryTool?.athenaWorkgroup || "",
           },
         }
       );
@@ -203,8 +207,11 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
             "athena:GetQueryExecution",
             "athena:GetQueryResults",
             "athena:ListDatabases",
+            "athena:GetDatabase",
             "athena:ListTableMetadata",
             "athena:GetTableMetadata",
+            "athena:ListWorkgroups",
+            "athena:ListDataCatalogs",
           ],
           resources: ["*"],
         })
@@ -213,12 +220,44 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
       athenaQueryTool.addToRolePolicy(
         new iam.PolicyStatement({
           actions: [
-            "s3:GetObject",
-            "s3:ListBucket",
-            "s3:GetBucketLocation",
-            "s3:PutObject",
+            "athena:GetWorkGroup",
+            "athena:BatchGetQueryExecution",
+            "athena:GetQueryExecution",
+            "athena:ListQueryExecutions",
+            "athena:StartQueryExecution",
+            "athena:StopQueryExecution",
+            "athena:GetQueryResults",
+            "athena:GetQueryResultsStream",
+            "athena:CreateNamedQuery",
+            "athena:GetNamedQuery",
+            "athena:BatchGetNamedQuery",
+            "athena:ListNamedQueries",
+            "athena:DeleteNamedQuery",
+            "athena:CreatePreparedStatement",
+            "athena:GetPreparedStatement",
+            "athena:ListPreparedStatements",
+            "athena:UpdatePreparedStatement",
+            "athena:DeletePreparedStatement",
           ],
-          resources: ["*"], // You might want to restrict this to specific buckets in production
+          resources: [
+            `arn:aws:athena:eu-central-1:360749485620:workgroup/${props.config.athenaQueryTool?.athenaWorkgroup || "primary"}`,
+          ],
+        })
+      );
+
+      athenaQueryTool.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"],
+          resources: ["*"],
+        })
+      );
+
+      athenaQueryTool.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ["s3:PutObject"],
+          resources: [
+            `arn:aws:s3:::aws-athena-query-results-360749485620-eu-central-1/${props.config.athenaQueryTool?.athenaWorkgroup + "/" || ""}*`,
+          ],
         })
       );
 
@@ -250,8 +289,7 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         codeInterpreterTool,
         webSearchTool,
         athenaQueryTool,
-        athenaQueryResultsLocation:
-          props.config.athenaQueryTool?.resultsLocation,
+        athenaWorkgroup: props.config.athenaQueryTool?.athenaWorkgroup,
       });
 
       new cdk.CfnOutput(this, "CognitoUserPool", {

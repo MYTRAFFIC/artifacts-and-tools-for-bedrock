@@ -32,7 +32,7 @@ export interface PlaygroundProps {
   codeInterpreterTool?: lambda.IFunction;
   webSearchTool?: lambda.IFunction;
   athenaQueryTool?: lambda.IFunction;
-  athenaQueryResultsLocation?: string;
+  athenaWorkgroup?: string;
 }
 
 export class Playground extends Construct {
@@ -420,7 +420,7 @@ export class Playground extends Construct {
     codeInterpreterTool,
     webSearchTool,
     athenaQueryTool,
-    athenaQueryResultsLocation,
+    athenaWorkgroup,
   }: {
     config: StackConfig;
     bedrockRegion: string;
@@ -433,7 +433,7 @@ export class Playground extends Construct {
     codeInterpreterTool?: lambda.IFunction;
     webSearchTool?: lambda.IFunction;
     athenaQueryTool?: lambda.IFunction;
-    athenaQueryResultsLocation?: string;
+    athenaWorkgroup?: string;
   }) {
     const connectionsTable = new dynamodb.Table(this, "ConnectionsTable", {
       partitionKey: {
@@ -528,9 +528,7 @@ export class Playground extends Construct {
           TOOL_CODE_INTERPRETER: codeInterpreterTool?.functionArn ?? "",
           TOOL_WEB_SEARCH: webSearchTool?.functionArn ?? "",
           TOOL_ATHENA_QUERY: athenaQueryTool?.functionArn ?? "",
-          ATHENA_QUERY_RESULTS_LOCATION:
-            athenaQueryResultsLocation ||
-            `s3://${sessionBucket.bucketName}/athena-results/`,
+          ATHENA_WORKGROUP: athenaWorkgroup || "primary",
         },
       }
     );

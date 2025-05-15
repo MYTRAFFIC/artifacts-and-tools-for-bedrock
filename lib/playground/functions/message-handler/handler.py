@@ -19,7 +19,7 @@ ARTIFACTS_ENABLED = os.environ.get("ARTIFACTS_ENABLED")
 TOOL_CODE_INTERPRETER = os.environ.get("TOOL_CODE_INTERPRETER")
 TOOL_WEB_SEARCH = os.environ.get("TOOL_WEB_SEARCH")
 TOOL_ATHENA_QUERY = os.environ.get("TOOL_ATHENA_QUERY")
-ATHENA_QUERY_RESULTS_LOCATION = os.environ.get("ATHENA_QUERY_RESULTS_LOCATION")
+ATHENA_WORKGROUP = os.environ.get("ATHENA_WORKGROUP")
 
 s3_client = boto3.client(
     "s3", region_name=AWS_REGION, endpoint_url=f"https://s3.{AWS_REGION}.amazonaws.com"

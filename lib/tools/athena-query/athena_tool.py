@@ -1,7 +1,8 @@
 import os
 import traceback
 import boto3
-from awswrangler.athena import start_query_execution
+import awswrangler as wr
+import pandas as pd
 
 
 class AthenaQueryTool:
@@ -23,17 +24,33 @@ class AthenaQueryTool:
             dict: A dictionary containing the query results and metadata
         """
         try:
-            response = start_query_execution(
+            response = wr.athena.start_query_execution(
                 sql=query,
                 database=database,
                 workgroup=self.athena_workgroup,
                 athena_query_wait_polling_delay=1,
                 wait=True,
             )
+            s3_output_path = response["ResultConfiguration"]["OutputLocation"]
+            # don't truncate to leave all infos to the LLM
+            with pd.option_context(
+                "display.max_rows",
+                None,
+                "display.max_columns",
+                None,
+                "display.max_colwidth",
+                None,
+                "display.width",
+                None,
+            ):
+                data_head = next(
+                    wr.s3.read_csv(path=s3_output_path, chunksize=10)
+                ).to_string(index=False)
 
             return {
                 "success": response["Status"].get("State", "") == "SUCCEEDED",
-                "file": response["ResultConfiguration"]["OutputLocation"],
+                "file": s3_output_path,
+                "data_head": data_head,
                 "query_execution_id": response["QueryExecutionId"],
                 "database": database,
             }
@@ -48,12 +65,15 @@ class AthenaQueryTool:
         Returns:
             list: A list of database names
         """
-        return [
-            "pipeline_data_v2",
-            "geography",
-            "pois",
-            "dev_ev_connect_oja_ev_charger_features",
-        ]
+        return {
+            "success": True,
+            "databases": [
+                "pipeline_data_v2",
+                "geography",
+                "pois",
+                "dev_ev_connect_oja_ev_charger_features",
+            ],
+        }
 
     def list_tables(self, database):
         """
@@ -91,15 +111,21 @@ class AthenaQueryTool:
                 CatalogName="AwsDataCatalog", DatabaseName=database, TableName=table
             )
 
-            columns = []
-            for col in response["TableMetadata"]["Columns"]:
-                columns.append({"name": col["Name"], "type": col["Type"]})
+            columns = [
+                {"name": col["Name"], "type": col["Type"]}
+                for col in response["TableMetadata"]["Columns"]
+            ]
+            partitions = [
+                {"name": col["Name"], "type": col["Type"]}
+                for col in response["TableMetadata"]["PartitionKeys"]
+            ]
 
             return {
                 "success": True,
                 "table": table,
                 "database": database,
                 "columns": columns,
+                "partitions": partitions,
             }
         except Exception as e:
             return {"success": False, "error": str(e)}

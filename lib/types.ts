@@ -15,6 +15,6 @@ export interface StackConfig {
   };
   athenaQueryTool?: {
     enabled: boolean;
-    resultsLocation?: string;
+    athenaWorkgroup?: string;
   };
 }

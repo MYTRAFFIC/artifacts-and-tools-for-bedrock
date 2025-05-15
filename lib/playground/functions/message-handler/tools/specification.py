@@ -17,30 +17,29 @@ athena_query = {
                     "action": {
                         "type": "string",
                         "description": "The action to perform: 'execute_query', 'list_databases', 'list_tables', or 'get_table_schema'",
-                        "enum": ["execute_query", "list_databases", "list_tables", "get_table_schema"]
+                        "enum": [
+                            "execute_query",
+                            "list_databases",
+                            "list_tables",
+                            "get_table_schema",
+                        ],
                     },
                     "query": {
                         "type": "string",
-                        "description": "The SQL query to execute (required for 'execute_query' action)"
+                        "description": "The SQL query to execute (required for 'execute_query' action)",
                     },
                     "database": {
                         "type": "string",
-                        "description": "The Athena database to query (required for 'execute_query', 'list_tables', and 'get_table_schema' actions)"
+                        "description": "The Athena database to query (required for 'execute_query', 'list_tables', and 'get_table_schema' actions)",
                     },
                     "table": {
                         "type": "string",
-                        "description": "The table name (required for 'get_table_schema' action)"
+                        "description": "The table name (required for 'get_table_schema' action)",
                     },
-                    "output_format": {
-                        "type": "string",
-                        "description": "The format of the output (csv or json)",
-                        "enum": ["csv", "json"],
-                        "default": "csv"
-                    }
                 },
-                "required": ["action"]
+                "required": ["action"],
             }
-        }
+        },
     }
 }
 
@@ -55,7 +54,8 @@ code_interpreter = {
 - Code must be executable, correct, and self-contained. All variables must be defined within the code block. Verify the code to ensure it is correct and complete. If the code is incorrect or incomplete, rewrite it and verify again.
 - Each code block should be self-contained and should not rely on variables or data from previous cells. Always write the code as if it is the first and only cell in the notebook.
 - Results must always be rendered in the Jupyter notebook cell output.
-- Supported additional libraries: pandas, numpy, matplotlib, scikit-learn, seaborn, scipy, pillow, opencv, geopandas, pyarrow, imageio, Faker.
+- Supported additional libraries: pandas, numpy, matplotlib, scikit-learn, seaborn, scipy, pillow, opencv, geopandas, pyarrow, imageio, Faker, s3fs.
+- You can read files from s3 directly using pandas with pd.read_csv("s3://...") or pd.read_parquet("s3://...")
 - Always import libraries using the following conventions: import pandas as pd, import numpy as np, import matplotlib.pyplot as plt, import seaborn as sns, import cv2 (for opencv).
 - When working with OpenCV images, always display them using matplotlib and use the FONT_HERSHEY_SIMPLEX font for text. For PIL use ImageFont.load_default()
 - To handle data files like CSV or Excel, first, run the tool to read the file and display the schema (e.g., `df = pd.read_csv('file.csv')` followed by `print(df.head())` or `print(df.info())`).

@@ -35,7 +35,6 @@ def handler(event, context):
             # Get the required parameters
             query = input_params.get("query")
             database = input_params.get("database")
-            output_format = input_params.get("output_format", "csv")
 
             if not query:
                 return {
@@ -52,7 +51,7 @@ def handler(event, context):
                 }
 
             # Execute the query
-            result = athena_tool.execute_query(query, database, output_format)
+            result = athena_tool.execute_query(query, database)
 
             if not result["success"]:
                 return {
@@ -61,12 +60,11 @@ def handler(event, context):
                 }
 
             # Format the response
-            response_text = f"Query executed successfully. Retrieved rows from {result['database']}.\n\n"
+            response_text = f"Query executed successfully. Full result available at {result["file"]}. First rows below\n\n{result["data_head"]}"
 
             return {
                 "status": "success",
                 "content": {"text": response_text},
-                "extra": {"output_files": [result["file"]]},
             }
 
         elif action == "list_databases":
@@ -152,7 +150,11 @@ def handler(event, context):
 
             # Format the response
             response_text = f"Schema for table '{table}' in database '{database}':\n"
+            response_text += "Columns:\n"
             for col in result["columns"]:
+                response_text += f"- {col['name']} ({col['type']})\n"
+            response_text += "Partitions:\n"
+            for col in result["partitions"]:
                 response_text += f"- {col['name']} ({col['type']})\n"
 
             return {
