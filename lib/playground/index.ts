@@ -31,6 +31,7 @@ export interface PlaygroundProps {
   powerToolsLayer: lambda.ILayerVersion;
   codeInterpreterTool?: lambda.IFunction;
   webSearchTool?: lambda.IFunction;
+  athenaQueryTool?: lambda.IFunction;
   athenaQueryResultsLocation?: string;
 }
 
@@ -418,6 +419,7 @@ export class Playground extends Construct {
     uploadBucket,
     codeInterpreterTool,
     webSearchTool,
+    athenaQueryTool,
     athenaQueryResultsLocation,
   }: {
     config: StackConfig;
@@ -430,6 +432,7 @@ export class Playground extends Construct {
     uploadBucket: s3.IBucket;
     codeInterpreterTool?: lambda.IFunction;
     webSearchTool?: lambda.IFunction;
+    athenaQueryTool?: lambda.IFunction;
     athenaQueryResultsLocation?: string;
   }) {
     const connectionsTable = new dynamodb.Table(this, "ConnectionsTable", {
@@ -504,66 +507,6 @@ export class Playground extends Construct {
       autoDeploy: true,
     });
 
-    // Create Athena query tool Lambda function
-    const athenaQueryTool = new lambdaPython.PythonFunction(
-      this,
-      "AthenaQueryTool",
-      {
-        entry: path.join(__dirname, "./functions/athena-query"),
-        runtime: lambda.Runtime.PYTHON_3_13,
-        architecture: lambdaArchitecture,
-        layers: [powerToolsLayer],
-        timeout: cdk.Duration.minutes(5),
-        memorySize: 256,
-        environment: {
-          ATHENA_QUERY_RESULTS_LOCATION: athenaQueryResultsLocation || `s3://${sessionBucket.bucketName}/athena-results/`,
-        },
-      }
-    );
-
-    // Grant permissions to the Athena query tool
-    athenaQueryTool.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "athena:StartQueryExecution",
-          "athena:GetQueryExecution",
-          "athena:GetQueryResults",
-          "athena:ListDatabases",
-          "athena:ListTableMetadata",
-          "athena:GetTableMetadata",
-        ],
-        resources: ["*"],
-      })
-    );
-
-    athenaQueryTool.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "s3:GetObject",
-          "s3:ListBucket",
-          "s3:GetBucketLocation",
-          "s3:PutObject",
-        ],
-        resources: [
-          sessionBucket.bucketArn,
-          `${sessionBucket.bucketArn}/*`,
-        ],
-      })
-    );
-
-    athenaQueryTool.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "glue:GetDatabase",
-          "glue:GetDatabases",
-          "glue:GetTable",
-          "glue:GetTables",
-          "glue:GetPartitions",
-        ],
-        resources: ["*"],
-      })
-    );
-
     const messageHandler = new lambdaPython.PythonFunction(
       this,
       "MessageHandler",
@@ -584,8 +527,10 @@ export class Playground extends Construct {
           ARTIFACTS_ENABLED: config.artifacts?.enabled ? "1" : "0",
           TOOL_CODE_INTERPRETER: codeInterpreterTool?.functionArn ?? "",
           TOOL_WEB_SEARCH: webSearchTool?.functionArn ?? "",
-          TOOL_ATHENA_QUERY: athenaQueryTool.functionArn,
-          ATHENA_QUERY_RESULTS_LOCATION: athenaQueryResultsLocation || `s3://${sessionBucket.bucketName}/athena-results/`,
+          TOOL_ATHENA_QUERY: athenaQueryTool?.functionArn ?? "",
+          ATHENA_QUERY_RESULTS_LOCATION:
+            athenaQueryResultsLocation ||
+            `s3://${sessionBucket.bucketName}/athena-results/`,
         },
       }
     );
@@ -618,7 +563,7 @@ export class Playground extends Construct {
 
     codeInterpreterTool?.grantInvoke(messageHandler);
     webSearchTool?.grantInvoke(messageHandler);
-    athenaQueryTool.grantInvoke(messageHandler);
+    athenaQueryTool?.grantInvoke(messageHandler);
     sessionTable.grantReadWriteData(messageHandler);
     sessionBucket.grantReadWrite(messageHandler);
     uploadBucket.grantReadWrite(messageHandler);

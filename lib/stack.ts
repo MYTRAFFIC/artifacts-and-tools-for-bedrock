@@ -167,10 +167,14 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
 
     let athenaQueryTool: lambda.IFunction | undefined;
     if (props.config.athenaQueryTool?.enabled) {
-      const athenaQueryLogGroup = new logs.LogGroup(this, "AthenaQueryLogGroup", {
-        retention: logs.RetentionDays.ONE_WEEK,
-        removalPolicy: cdk.RemovalPolicy.DESTROY,
-      });
+      const athenaQueryLogGroup = new logs.LogGroup(
+        this,
+        "AthenaQueryLogGroup",
+        {
+          retention: logs.RetentionDays.ONE_WEEK,
+          removalPolicy: cdk.RemovalPolicy.DESTROY,
+        }
+      );
 
       athenaQueryTool = new lambda.Function(this, "AthenaQueryTool", {
         architecture: lambdaArchitecture,
@@ -183,7 +187,8 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
           path.join(__dirname, "./playground/functions/athena-query")
         ),
         environment: {
-          ATHENA_QUERY_RESULTS_LOCATION: props.config.athenaQueryTool.resultsLocation || "",
+          ATHENA_QUERY_RESULTS_LOCATION:
+            props.config.athenaQueryTool.resultsLocation || "",
         },
       });
 
@@ -241,7 +246,9 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         powerToolsLayer,
         codeInterpreterTool,
         webSearchTool,
-        athenaQueryResultsLocation: props.config.athenaQueryTool?.resultsLocation,
+        athenaQueryTool,
+        athenaQueryResultsLocation:
+          props.config.athenaQueryTool?.resultsLocation,
       });
 
       new cdk.CfnOutput(this, "CognitoUserPool", {
