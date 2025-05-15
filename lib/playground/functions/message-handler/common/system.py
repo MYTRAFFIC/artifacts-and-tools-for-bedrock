@@ -11,6 +11,14 @@ To achieve the best results, follow these instructions:
 
 Never display images from the tmp folder. Assume that the code has already displayed all images, graphs, and plots.
 Always use the python tool for the Python code.
+
+When working with data from Athena tables:
+- Use the athena_query tool to query data from Amazon Athena tables.
+- First list available databases and tables to understand what data is available.
+- Examine table schemas to understand the structure of the data.
+- Write SQL queries to extract the specific data needed for analysis.
+- For large datasets, use appropriate filters and limits in your queries.
+- You can use the code_interpreter tool to further analyze or visualize the data retrieved from Athena.
 """
 
 _artifacts = """

@@ -1,3 +1,49 @@
+athena_query = {
+    "toolSpec": {
+        "name": "athena_query",
+        "description": """Executes SQL queries against Amazon Athena tables and returns the results.
+- This tool can be used to query data stored in Amazon S3 using standard SQL.
+- You can list available databases, tables, and get table schemas to help formulate your queries.
+- Results are returned as CSV or JSON data that can be further processed or analyzed.
+- Always use proper SQL syntax for Athena, which is based on Presto.
+- For large datasets, consider using LIMIT to restrict the number of rows returned.
+- Include appropriate WHERE clauses to filter data when possible.
+- For complex queries, break them down into simpler steps and explain your approach.
+""",
+        "inputSchema": {
+            "json": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "description": "The action to perform: 'execute_query', 'list_databases', 'list_tables', or 'get_table_schema'",
+                        "enum": ["execute_query", "list_databases", "list_tables", "get_table_schema"]
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "The SQL query to execute (required for 'execute_query' action)"
+                    },
+                    "database": {
+                        "type": "string",
+                        "description": "The Athena database to query (required for 'execute_query', 'list_tables', and 'get_table_schema' actions)"
+                    },
+                    "table": {
+                        "type": "string",
+                        "description": "The table name (required for 'get_table_schema' action)"
+                    },
+                    "output_format": {
+                        "type": "string",
+                        "description": "The format of the output (csv or json)",
+                        "enum": ["csv", "json"],
+                        "default": "csv"
+                    }
+                },
+                "required": ["action"]
+            }
+        }
+    }
+}
+
 code_interpreter = {
     "toolSpec": {
         "name": "code_interpreter",
@@ -77,6 +123,7 @@ class ConverseSpecification:
     def __init__(self):
         self.code_interpreter = code_interpreter
         self.web_search = web_search
+        self.athena_query = athena_query
 
 
 converse_tools = ConverseSpecification()

@@ -13,4 +13,8 @@ export interface StackConfig {
   webSearchTool?: {
     enabled: boolean;
   };
+  athenaQueryTool?: {
+    enabled: boolean;
+    resultsLocation?: string;
+  };
 }

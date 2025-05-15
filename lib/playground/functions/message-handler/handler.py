@@ -17,6 +17,8 @@ BEDROCK_MODEL = os.environ.get("BEDROCK_MODEL")
 ARTIFACTS_ENABLED = os.environ.get("ARTIFACTS_ENABLED")
 TOOL_CODE_INTERPRETER = os.environ.get("TOOL_CODE_INTERPRETER")
 TOOL_WEB_SEARCH = os.environ.get("TOOL_WEB_SEARCH")
+TOOL_ATHENA_QUERY = os.environ.get("TOOL_ATHENA_QUERY")
+ATHENA_QUERY_RESULTS_LOCATION = os.environ.get("ATHENA_QUERY_RESULTS_LOCATION")
 
 s3_client = boto3.client(
     "s3", region_name=AWS_REGION, endpoint_url=f"https://s3.{AWS_REGION}.amazonaws.com"
@@ -27,6 +29,7 @@ provider = ToolProvider(
     {
         "code_interpreter": TOOL_CODE_INTERPRETER,
         "web_search": TOOL_WEB_SEARCH,
+        "athena_query": TOOL_ATHENA_QUERY,
     }
 )
 
@@ -35,6 +38,8 @@ if TOOL_CODE_INTERPRETER:
     tool_config.append(converse_tools.code_interpreter)
 if TOOL_WEB_SEARCH:
     tool_config.append(converse_tools.web_search)
+if TOOL_ATHENA_QUERY:
+    tool_config.append(converse_tools.athena_query)
 
 
 def handle_message(logger, connection_id, user_id, body):

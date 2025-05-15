@@ -17,7 +17,11 @@ const config: StackConfig = {
     enabled: true,
   },
   webSearchTool: {
-    enabled: false,
+    enabled: true,
+  },
+  athenaQueryTool: {
+    enabled: true,
+    resultsLocation: "s3://YOUR_BUCKET_NAME/athena-results/", // Replace with your actual S3 bucket for Athena query results
   },
 };
 

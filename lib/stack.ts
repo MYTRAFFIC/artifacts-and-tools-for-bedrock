@@ -165,6 +165,73 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
       });
     }
 
+    let athenaQueryTool: lambda.IFunction | undefined;
+    if (props.config.athenaQueryTool?.enabled) {
+      const athenaQueryLogGroup = new logs.LogGroup(this, "AthenaQueryLogGroup", {
+        retention: logs.RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      });
+
+      athenaQueryTool = new lambda.Function(this, "AthenaQueryTool", {
+        architecture: lambdaArchitecture,
+        timeout: cdk.Duration.minutes(5),
+        memorySize: 512,
+        handler: "index.handler",
+        logGroup: athenaQueryLogGroup,
+        runtime: lambda.Runtime.PYTHON_3_13,
+        code: lambda.Code.fromAsset(
+          path.join(__dirname, "./playground/functions/athena-query")
+        ),
+        environment: {
+          ATHENA_QUERY_RESULTS_LOCATION: props.config.athenaQueryTool.resultsLocation || "",
+        },
+      });
+
+      // Grant permissions to the Athena query tool
+      athenaQueryTool.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: [
+            "athena:StartQueryExecution",
+            "athena:GetQueryExecution",
+            "athena:GetQueryResults",
+            "athena:ListDatabases",
+            "athena:ListTableMetadata",
+            "athena:GetTableMetadata",
+          ],
+          resources: ["*"],
+        })
+      );
+
+      athenaQueryTool.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: [
+            "s3:GetObject",
+            "s3:ListBucket",
+            "s3:GetBucketLocation",
+            "s3:PutObject",
+          ],
+          resources: ["*"], // You might want to restrict this to specific buckets in production
+        })
+      );
+
+      athenaQueryTool.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: [
+            "glue:GetDatabase",
+            "glue:GetDatabases",
+            "glue:GetTable",
+            "glue:GetTables",
+            "glue:GetPartitions",
+          ],
+          resources: ["*"],
+        })
+      );
+
+      new cdk.CfnOutput(this, "AthenaQueryToolArn", {
+        value: athenaQueryTool.functionArn,
+      });
+    }
+
     if (props.config.playground?.enabled) {
       const playground = new Playground(this, "Playground", {
         config: props.config,
@@ -174,6 +241,7 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         powerToolsLayer,
         codeInterpreterTool,
         webSearchTool,
+        athenaQueryResultsLocation: props.config.athenaQueryTool?.resultsLocation,
       });
 
       new cdk.CfnOutput(this, "CognitoUserPool", {
