@@ -1,4 +1,3 @@
-import json
 import traceback
 from aws_lambda_powertools import Logger
 
@@ -17,7 +16,7 @@ def handler(event, context):
         if name != "athena_query":
             return {
                 "status": "error",
-                "content": [{"text": f"Invalid tool name: {name}"}],
+                "content": {"text": f"Invalid tool name: {name}"},
             }
 
         # Get the action to perform
@@ -25,7 +24,7 @@ def handler(event, context):
         if not action:
             return {
                 "status": "error",
-                "content": [{"text": "Action is required"}],
+                "content": {"text": "Action is required"},
             }
 
         # Initialize the Athena query tool
@@ -41,15 +40,15 @@ def handler(event, context):
             if not query:
                 return {
                     "status": "error",
-                    "content": [{"text": "Query is required for execute_query action"}],
+                    "content": {"text": "Query is required for execute_query action"},
                 }
 
             if not database:
                 return {
                     "status": "error",
-                    "content": [
-                        {"text": "Database is required for execute_query action"}
-                    ],
+                    "content": {
+                        "text": "Database is required for execute_query action"
+                    },
                 }
 
             # Execute the query
@@ -58,49 +57,16 @@ def handler(event, context):
             if not result["success"]:
                 return {
                     "status": "error",
-                    "content": [{"text": f"Error executing query: {result['error']}"}],
+                    "content": {"text": f"Error executing query: {result['error']}"},
                 }
 
             # Format the response
-            response_text = f"Query executed successfully. Retrieved {result['rows']} rows from {result['database']}.\n\n"
-
-            # Add column information
-            response_text += "Columns:\n"
-            for col in result["columns"]:
-                response_text += f"- {col['name']} ({col['type']})\n"
-
-            response_text += "\n"
-
-            # Add a sample of the data (first few rows)
-            if result["format"] == "csv":
-                # For CSV, show the first few lines
-                lines = result["data"].split("\n")
-                sample_data = "\n".join(lines[: min(11, len(lines))])
-                if len(lines) > 10:
-                    sample_data += "\n... (more rows)"
-                response_text += f"Sample data:\n```\n{sample_data}\n```"
-            else:
-                # For JSON, parse and show a few records
-                try:
-                    data = json.loads(result["data"])
-                    sample_data = json.dumps(data[: min(5, len(data))], indent=2)
-                    if len(data) > 5:
-                        sample_data += "\n... (more records)"
-                    response_text += f"Sample data:\n```json\n{sample_data}\n```"
-                except:
-                    response_text += f"Sample data:\n```json\n{result['data'][:1000]}\n... (truncated)\n```"
+            response_text = f"Query executed successfully. Retrieved rows from {result['database']}.\n\n"
 
             return {
                 "status": "success",
-                "content": [{"text": response_text}],
-                "extra": {
-                    "query_execution_id": result["query_execution_id"],
-                    "database": result["database"],
-                    "rows": result["rows"],
-                    "columns": result["columns"],
-                    "format": result["format"],
-                    "data": result["data"],
-                },
+                "content": {"text": response_text},
+                "extra": {"output_files": [result["file"]]},
             }
 
         elif action == "list_databases":
@@ -110,9 +76,7 @@ def handler(event, context):
             if not result["success"]:
                 return {
                     "status": "error",
-                    "content": [
-                        {"text": f"Error listing databases: {result['error']}"}
-                    ],
+                    "content": {"text": f"Error listing databases: {result['error']}"},
                 }
 
             # Format the response
@@ -122,8 +86,7 @@ def handler(event, context):
 
             return {
                 "status": "success",
-                "content": [{"text": response_text}],
-                "extra": {"databases": result["databases"]},
+                "content": {"text": response_text},
             }
 
         elif action == "list_tables":
@@ -133,9 +96,7 @@ def handler(event, context):
             if not database:
                 return {
                     "status": "error",
-                    "content": [
-                        {"text": "Database is required for list_tables action"}
-                    ],
+                    "content": {"text": "Database is required for list_tables action"},
                 }
 
             # List all tables in the database
@@ -144,7 +105,7 @@ def handler(event, context):
             if not result["success"]:
                 return {
                     "status": "error",
-                    "content": [{"text": f"Error listing tables: {result['error']}"}],
+                    "content": {"text": f"Error listing tables: {result['error']}"},
                 }
 
             # Format the response
@@ -154,8 +115,7 @@ def handler(event, context):
 
             return {
                 "status": "success",
-                "content": [{"text": response_text}],
-                "extra": {"database": database, "tables": result["tables"]},
+                "content": {"text": response_text},
             }
 
         elif action == "get_table_schema":
@@ -166,17 +126,17 @@ def handler(event, context):
             if not database:
                 return {
                     "status": "error",
-                    "content": [
-                        {"text": "Database is required for get_table_schema action"}
-                    ],
+                    "content": {
+                        "text": "Database is required for get_table_schema action"
+                    },
                 }
 
             if not table:
                 return {
                     "status": "error",
-                    "content": [
-                        {"text": "Table is required for get_table_schema action"}
-                    ],
+                    "content": {
+                        "text": "Table is required for get_table_schema action"
+                    },
                 }
 
             # Get the table schema
@@ -185,9 +145,9 @@ def handler(event, context):
             if not result["success"]:
                 return {
                     "status": "error",
-                    "content": [
-                        {"text": f"Error getting table schema: {result['error']}"}
-                    ],
+                    "content": {
+                        "text": f"Error getting table schema: {result['error']}"
+                    },
                 }
 
             # Format the response
@@ -197,18 +157,13 @@ def handler(event, context):
 
             return {
                 "status": "success",
-                "content": [{"text": response_text}],
-                "extra": {
-                    "database": database,
-                    "table": table,
-                    "columns": result["columns"],
-                },
+                "content": {"text": response_text},
             }
 
         else:
             return {
                 "status": "error",
-                "content": [{"text": f"Invalid action: {action}"}],
+                "content": {"text": f"Invalid action: {action}"},
             }
 
     except Exception as e:
@@ -216,5 +171,5 @@ def handler(event, context):
         logger.error(traceback.format_exc())
         return {
             "status": "error",
-            "content": [{"text": f"Error processing request: {str(e)}"}],
+            "content": {"text": f"Error processing request: {str(e)}"},
         }

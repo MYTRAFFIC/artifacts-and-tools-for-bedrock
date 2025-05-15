@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 import boto3
 from common.sender import MessageSender
 from common.system import system_messages
@@ -112,6 +113,7 @@ def handle_message(logger, connection_id, user_id, body):
         else:
             raise ValueError(f"Unknown event type: {event_type}")
     except Exception as e:
+        logger.error(traceback.print_exc())
         logger.error(f"Error processing message: {e}")
         sender.send_error(str(e))
 

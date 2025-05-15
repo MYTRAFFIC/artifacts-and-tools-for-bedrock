@@ -4,6 +4,7 @@ import { Construct } from "constructs";
 import { StackConfig } from "./types";
 import { Playground } from "./playground";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as lambdaPython from "@aws-cdk/aws-lambda-python-alpha";
 import * as logs from "aws-cdk-lib/aws-logs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -176,22 +177,23 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         }
       );
 
-      athenaQueryTool = new lambda.Function(this, "AthenaQueryTool", {
-        architecture: lambdaArchitecture,
-        timeout: cdk.Duration.minutes(5),
-        memorySize: 512,
-        handler: "index.handler",
-        logGroup: athenaQueryLogGroup,
-        runtime: lambda.Runtime.PYTHON_3_13,
-        layers: [powerToolsLayer],
-        code: lambda.Code.fromAsset(
-          path.join(__dirname, "./tools/athena-query")
-        ),
-        environment: {
-          ATHENA_QUERY_RESULTS_LOCATION:
-            props.config.athenaQueryTool.resultsLocation || "",
-        },
-      });
+      athenaQueryTool = new lambdaPython.PythonFunction(
+        this,
+        "AthenaQueryTool",
+        {
+          entry: path.join(__dirname, "./tools/athena-query"),
+          runtime: lambda.Runtime.PYTHON_3_13,
+          architecture: lambdaArchitecture,
+          timeout: cdk.Duration.minutes(5),
+          memorySize: 512,
+          logGroup: athenaQueryLogGroup,
+          layers: [powerToolsLayer],
+          environment: {
+            ATHENA_QUERY_RESULTS_LOCATION:
+              props.config.athenaQueryTool.resultsLocation || "",
+          },
+        }
+      );
 
       // Grant permissions to the Athena query tool
       athenaQueryTool.addToRolePolicy(
