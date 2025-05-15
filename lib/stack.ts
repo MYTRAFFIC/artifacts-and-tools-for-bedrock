@@ -183,8 +183,9 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         handler: "index.handler",
         logGroup: athenaQueryLogGroup,
         runtime: lambda.Runtime.PYTHON_3_13,
+        layers: [powerToolsLayer],
         code: lambda.Code.fromAsset(
-          path.join(__dirname, "./playground/functions/athena-query")
+          path.join(__dirname, "./tools/athena-query")
         ),
         environment: {
           ATHENA_QUERY_RESULTS_LOCATION:
