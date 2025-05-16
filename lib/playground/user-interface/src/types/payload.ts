@@ -1,6 +1,7 @@
 export enum OutboundEventType {
   HEARTBEAT = "HEARTBEAT",
   CONVERSE = "CONVERSE",
+  INTERRUPT = "INTERRUPT",
 }
 
 export enum InboundEventType {

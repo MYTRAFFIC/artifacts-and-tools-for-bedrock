@@ -22,6 +22,7 @@ export interface ChatUIInputPanelProps {
   readyState: ReadyState;
   files: FileItem[];
   onSendMessage?: (message: string) => void;
+  onInterrupt?: () => void;
   onAddFiles: (files: FileItem[]) => void;
   onRemoveFile: (file: FileItem) => void;
 }
@@ -130,32 +131,37 @@ export default function ChatUIInputPanel(props: ChatUIInputPanelProps) {
             onCompositionEnd={() => setIsComposing(false)}
           />
           <div style={{ marginLeft: "8px" }}>
-            <Button
-              disabled={
-                props.loading ||
-                props.readyState !== ReadyState.OPEN ||
-                props.running ||
-                inputText.trim().length === 0
-              }
-              onClick={onSendMessage}
-              iconAlign="right"
-              iconName={!props.running ? "angle-right-double" : undefined}
-              variant="primary"
-            >
-              {props.running ? (
-                <>
-                  Loading&nbsp;&nbsp;
-                  <Spinner />
-                </>
-              ) : props.readyState !== ReadyState.OPEN ? (
-                <>
-                  Connecting&nbsp;&nbsp;
-                  <Spinner />
-                </>
-              ) : (
-                <>{props.sendButtonText ?? "Send"}</>
-              )}
-            </Button>
+            {props.running ? (
+              <Button
+                onClick={props.onInterrupt}
+                iconAlign="right"
+                iconName="close"
+                variant="primary"
+              >
+                Interrupt
+              </Button>
+            ) : (
+              <Button
+                disabled={
+                  props.loading ||
+                  props.readyState !== ReadyState.OPEN ||
+                  inputText.trim().length === 0
+                }
+                onClick={onSendMessage}
+                iconAlign="right"
+                iconName="angle-right-double"
+                variant="primary"
+              >
+                {props.readyState !== ReadyState.OPEN ? (
+                  <>
+                    Connecting&nbsp;&nbsp;
+                    <Spinner />
+                  </>
+                ) : (
+                  <>{props.sendButtonText ?? "Send"}</>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       </Container>

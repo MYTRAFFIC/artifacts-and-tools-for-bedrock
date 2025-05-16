@@ -17,6 +17,7 @@ export interface ChatUIProps {
   readyState: ReadyState;
   files: FileItem[];
   onSendMessage?: (message: string) => void;
+  onInterrupt?: () => void;
   onAddFiles: (files: FileItem[]) => void;
   onRemoveFile: (file: FileItem) => void;
   setArtifactIndex: (index: number) => void;

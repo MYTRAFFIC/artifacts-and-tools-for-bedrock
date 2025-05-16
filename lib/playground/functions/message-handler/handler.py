@@ -57,11 +57,24 @@ def handle_message(logger, connection_id, user_id, body):
 
         if event_type == "HEARTBEAT":
             sender.send_heartbeat(BEDROCK_MODEL)
+        elif event_type == "INTERRUPT":
+            # Create a flag in the session to indicate interruption
+            _, session = load_session(s3_client, user_id, session_id)
+            session["interrupt"] = True
+            save_session(s3_client, user_id, session_id, session)
+
+            # Send a message to the client to indicate that interruption was requested
+            sender.send_text(
+                "Interruption requested. The model will stop generating as soon as possible."
+            )
         elif event_type == "CONVERSE":
             files = body.get("files", [])
             message = body.get("message")
 
             new_session, session = load_session(s3_client, user_id, session_id)
+            # Reset the interruption flag when starting a new conversation
+            session["interrupt"] = False
+
             converse_messages = session.get("messages")
             tool_extra = session.get("tool_extra")
             inline_files = session.get("inline_files")
@@ -103,6 +116,7 @@ def handle_message(logger, connection_id, user_id, body):
                 converse_messages,
                 tool_extra,
                 files,
+                s3_client,  # Pass s3_client to check for interruption
             )
 
             if new_session:
@@ -127,6 +141,7 @@ def converse_make_request_stream(
     converse_messages,
     tool_extra,
     files,
+    s3_client,  # Added s3_client parameter
 ):
     file_names = [os.path.basename(file["file_name"]) for file in files]
     system = system_messages(
@@ -146,7 +161,17 @@ def converse_make_request_stream(
     )
 
     executor = ConverseToolExecutor(user_id, session_id, provider)
+    chunk_count = 0
     for chunk in streaming_response["stream"]:
+        # Check for interruption every 10 chunks
+        if chunk_count % 10 == 0:
+            # Load the session to check the interruption flag
+            _, session = load_session(s3_client, user_id, session_id)
+            if session.get("interrupt", False):
+                sender.send_text("\n\n[Generation interrupted by user]")
+                break
+
+        chunk_count += 1
         if text := executor.process_chunk(chunk):
             sender.send_text(text)
 

@@ -253,6 +253,19 @@ export default function Playground() {
     ]);
   };
 
+  const interruptGeneration = () => {
+    if (!running) return;
+
+    const interrupt_data = {
+      session_id: sessionId,
+      event_type: OutboundEventType.INTERRUPT,
+    };
+
+    console.log("Sending interrupt", interrupt_data);
+
+    sendJsonMessage(interrupt_data);
+  };
+
   const { normalized, artifacts } = normalizeMessages(messages);
 
   if (!sessionId) return null;
@@ -274,6 +287,7 @@ export default function Playground() {
             readyState={readyState}
             files={files}
             onSendMessage={sendMessage}
+            onInterrupt={interruptGeneration}
             onAddFiles={onAddFiles}
             onRemoveFile={onRemoveFile}
             setArtifactIndex={setArtifactIndex}
