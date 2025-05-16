@@ -43,14 +43,17 @@ class AthenaQueryTool:
                 "display.width",
                 None,
             ):
-                data_head = next(
-                    wr.s3.read_csv(path=s3_output_path, chunksize=10)
-                ).to_string(index=False)
+                data_head = next(wr.s3.read_csv(path=s3_output_path, chunksize=10))
+                if "geometry_4326" in data_head.columns:
+                    data_head["geometry_4326"] = data_head["geometry_4326"].apply(
+                        lambda x: x[:10]
+                    )
+                data_head_str = data_head.to_string(index=False)
 
             return {
                 "success": response["Status"].get("State", "") == "SUCCEEDED",
                 "file": s3_output_path,
-                "data_head": data_head,
+                "data_head": data_head_str,
                 "query_execution_id": response["QueryExecutionId"],
                 "database": database,
             }
