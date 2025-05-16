@@ -269,6 +269,7 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
             "glue:GetTable",
             "glue:GetTables",
             "glue:GetPartitions",
+            "glue:GetPartition",
           ],
           resources: ["*"],
         })
