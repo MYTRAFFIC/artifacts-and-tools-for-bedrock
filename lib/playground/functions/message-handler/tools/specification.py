@@ -4,11 +4,22 @@ athena_query = {
         "description": """Executes SQL queries against Amazon Athena tables and returns the results.
 - This tool can be used to query data stored in Amazon S3 using standard SQL.
 - You can list available databases, tables, and get table schemas to help formulate your queries.
-- Results are returned as CSV or JSON data that can be further processed or analyzed.
+- Results are returned as CSV stored in s3 that can be further processed or analyzed with the code interpreter tool.
 - Always use proper SQL syntax for Athena, which is based on Presto.
 - For large datasets, consider using LIMIT to restrict the number of rows returned.
-- Include appropriate WHERE clauses to filter data when possible.
+- Include appropriate WHERE clauses to filter data when possible particularly using partitioning columns to avoid large queries.
 - For complex queries, break them down into simpler steps and explain your approach.
+- We have some normalized columns in all our datasets:
+    - country: always has the following uppercase format: BE, DE, FR, ES, IT, GB, NL
+    - day: 2024-03-01
+    - month: 2024-03
+    - week: 2025-05-12: a week is represented by the date of the Monday of this week
+    - polygon_type: "neighborhood", "store", "shopping_center" (like a store but which greater area), "shopping_area" (even larger than a shopping_center, contains many stores), "custom" (you can probably ignore this category)
+    - flow_kind: always use the value "all" by default
+    - _4326 columns always contain a WKT representation of a geometry in lat lon coordinates
+    - in table that contain flows, the "adjusted_*" column is the one to consider if available, since it is the value after applying our algorithms.
+- Please avoid at all costs doing geographical queries on a column with "%[keyword]%": the risk of false positives is too high (ex %Paris% may contain many places in France not close at all to Paris)
+- For geographical join we either have lat, lon columns or a reference to a neighborhood_id. Our geographies are divided into four types of nested entities. The lowest level is the `road_tile`, which form `neighborhood`, which are located within `city` which are within `adjustment_zone`. All of these entities have a unique ID to reference them in other tables (similar to a foreign key). Definitions for `neighborhood`, `city` and `adjustment_zone` can be found in the `geography` database. Relationships between those entities can be found in the `pipeline_data_v2.polygon_hierarchy` table where each nested entity has a link to the parent containing it.
 """,
         "inputSchema": {
             "json": {
