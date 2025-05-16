@@ -207,6 +207,7 @@ class ConverseToolExecutor:
                 }
             )
 
+        print("get_formatted_tool_use: ", tool_use)
         return tool_use
 
     def get_tool_results(self):
