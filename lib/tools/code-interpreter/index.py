@@ -4,6 +4,7 @@ import requests
 import nbformat
 import subprocess
 import shutil
+import traceback
 
 COMMON_CODE = """%matplotlib inline
 import pandas as pd
@@ -133,7 +134,7 @@ def handler(event, context):
             "extra": {"html": html_output, "output_files": files_result},
         }
     except Exception as e:
-        print(e)
+        traceback.print_exc()
         error_text = str(e)
 
         return {"status": "error", "content": {"text": error_text}}
