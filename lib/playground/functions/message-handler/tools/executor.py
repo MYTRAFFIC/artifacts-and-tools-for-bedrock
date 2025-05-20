@@ -124,6 +124,11 @@ class ConverseToolExecutor:
 
             output_files = []
             for file_name in output_file_names:
+                if not file_name:
+                    print(
+                        "The model mentionned that it created a file but without specifying filename: ignoring..."
+                    )
+                    continue
                 file = generate_presigned_post(
                     s3_client, self.user_id, self.session_id, file_name
                 )
