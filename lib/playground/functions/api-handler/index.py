@@ -34,7 +34,7 @@ app.include_router(sessions_router)
 
 
 @app.exception_handler(ClientError)
-def handle_value_error(e: ClientError):
+def handle_client_error(e: ClientError):
     logger.exception(e)
 
     return Response(

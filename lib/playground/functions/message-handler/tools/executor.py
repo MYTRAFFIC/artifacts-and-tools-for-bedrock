@@ -113,8 +113,8 @@ class ConverseToolExecutor:
             input = current["input"]
 
             output_file_names = input.get("output_files", [])
-            if type(output_file_names) != list:
-                if type(output_file_names) == str:
+            if type(output_file_names) is not list:
+                if type(output_file_names) is str:
                     try:
                         output_file_names = json.loads(
                             output_file_names.replace("'", '"')

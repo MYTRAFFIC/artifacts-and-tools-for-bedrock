@@ -177,6 +177,17 @@ The Web Search Tool uses the [Brave Search API](https://brave.com/search/api/). 
 
 
 ## Local Development
+
+### Code quality
+
+**Requirement**: ensure you have [uv](https://github.com/astral-sh/uv) installed
+
+Install pre-commit to make sure that some basic checks are run before you commit something:
+
+```bash
+uvx pre-commit install
+```
+
 ### Get aws-exports.json from the backend
 Before you can connect to the backend from the local machine, you should deploy the backend part and then download the ``aws-exports.json`` file with the configuration parameters from the website.
 
