@@ -110,6 +110,9 @@ class MessageSender:
                     request_text = f'Search query:\n"{search_query}"'
                 if additiona_urls:
                     request_text += f"\n\nURLs:\n\n```json\n{json.dumps(additiona_urls, indent=2)}\n```"
+            elif tool_name == "athena_query" and input.get("query"):
+                sql_query = input.get("query")
+                request_text = f"```sql\n{sql_query}\n```"
             else:
                 request_text = f"```json\n{json.dumps(input, indent=2)}\n```"
 
