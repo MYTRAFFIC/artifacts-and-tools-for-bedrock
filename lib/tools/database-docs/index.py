@@ -1,11 +1,7 @@
 import traceback
-from aws_lambda_powertools import Logger
 from docs_tool import DatabaseDocumentationTool
 
-logger = Logger(log_uncaught_exceptions=True)
 
-
-@logger.inject_lambda_context(log_event=True)
 def handler(event, context):
     try:
         # Extract the input parameters
@@ -134,8 +130,8 @@ def handler(event, context):
             }
 
     except Exception as e:
-        logger.error(f"Error processing request: {str(e)}")
-        logger.error(traceback.format_exc())
+        print(f"Error processing request: {str(e)}")
+        print(traceback.format_exc())
         return {
             "status": "error",
             "content": {"text": f"Error processing request: {str(e)}"},
