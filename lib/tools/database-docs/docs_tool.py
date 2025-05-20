@@ -265,8 +265,6 @@ class DatabaseDocumentationTool:
                                 "can_be_shown_fast",
                                 "can_be_shown_medium",
                                 "can_be_shown_slow",
-                                "latitude",
-                                "longitude",
                             ],
                             "partition_columns": ["country"],
                             "prediction_columns": [
