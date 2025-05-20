@@ -31,8 +31,7 @@ def handler(event, context):
             return {
                 "status": "success",
                 "content": {
-                    "text": "Here's an overview of available databases:",
-                    "data": overview,
+                    "text": f"Here's an overview of available databases:\n{overview}",
                 },
             }
 
@@ -56,8 +55,7 @@ def handler(event, context):
             return {
                 "status": "success",
                 "content": {
-                    "text": f"Here's detailed information about database '{database}':",
-                    "data": info,
+                    "text": f"Here's detailed information about database '{database}':\n{info}",
                 },
             }
 
@@ -83,8 +81,7 @@ def handler(event, context):
             return {
                 "status": "success",
                 "content": {
-                    "text": f"Here's detailed information about table '{table}' in database '{database}':",
-                    "data": info,
+                    "text": f"Here's detailed information about table '{table}' in database '{database}':\n{info}",
                 },
             }
 
@@ -108,8 +105,7 @@ def handler(event, context):
             return {
                 "status": "success",
                 "content": {
-                    "text": f"Found {len(results)} tables matching keyword '{keyword}':",
-                    "data": results,
+                    "text": f"Found {len(results)} tables matching keyword '{keyword}':\n{results}",
                 },
             }
 
@@ -118,8 +114,7 @@ def handler(event, context):
             return {
                 "status": "success",
                 "content": {
-                    "text": "Here are some common join patterns between tables:",
-                    "data": joins,
+                    "text": f"Here are some common join patterns between tables:\n{joins}",
                 },
             }
 
