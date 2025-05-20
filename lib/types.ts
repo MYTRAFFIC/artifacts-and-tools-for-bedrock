@@ -17,4 +17,7 @@ export interface StackConfig {
     enabled: boolean;
     athenaWorkgroup?: string;
   };
+  databaseDocsTool?: {
+    enabled: boolean;
+  };
 }

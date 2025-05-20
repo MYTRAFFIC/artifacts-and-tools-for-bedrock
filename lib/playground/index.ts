@@ -32,6 +32,7 @@ export interface PlaygroundProps {
   codeInterpreterTool?: lambda.IFunction;
   webSearchTool?: lambda.IFunction;
   athenaQueryTool?: lambda.IFunction;
+  databaseDocsTool?: lambda.IFunction;
   athenaWorkgroup?: string;
 }
 
@@ -420,6 +421,7 @@ export class Playground extends Construct {
     codeInterpreterTool,
     webSearchTool,
     athenaQueryTool,
+    databaseDocsTool,
     athenaWorkgroup,
   }: {
     config: StackConfig;
@@ -433,6 +435,7 @@ export class Playground extends Construct {
     codeInterpreterTool?: lambda.IFunction;
     webSearchTool?: lambda.IFunction;
     athenaQueryTool?: lambda.IFunction;
+    databaseDocsTool?: lambda.IFunction;
     athenaWorkgroup?: string;
   }) {
     const connectionsTable = new dynamodb.Table(this, "ConnectionsTable", {
@@ -528,6 +531,7 @@ export class Playground extends Construct {
           TOOL_CODE_INTERPRETER: codeInterpreterTool?.functionArn ?? "",
           TOOL_WEB_SEARCH: webSearchTool?.functionArn ?? "",
           TOOL_ATHENA_QUERY: athenaQueryTool?.functionArn ?? "",
+          TOOL_DATABASE_DOCS: databaseDocsTool?.functionArn ?? "",
           ATHENA_WORKGROUP: athenaWorkgroup || "primary",
         },
       }
@@ -562,6 +566,7 @@ export class Playground extends Construct {
     codeInterpreterTool?.grantInvoke(messageHandler);
     webSearchTool?.grantInvoke(messageHandler);
     athenaQueryTool?.grantInvoke(messageHandler);
+    databaseDocsTool?.grantInvoke(messageHandler);
     sessionTable.grantReadWriteData(messageHandler);
     sessionBucket.grantReadWrite(messageHandler);
     uploadBucket.grantReadWrite(messageHandler);

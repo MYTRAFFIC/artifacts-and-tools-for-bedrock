@@ -17,11 +17,14 @@ const config: StackConfig = {
     enabled: true,
   },
   webSearchTool: {
-    enabled: true,
+    enabled: false,
   },
   athenaQueryTool: {
     enabled: true,
     athenaWorkgroup: "ArtifactsAndTools",
+  },
+  databaseDocsTool: {
+    enabled: true,
   },
 };
 
