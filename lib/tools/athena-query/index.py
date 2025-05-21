@@ -67,6 +67,30 @@ def handler(event, context):
                 "content": {"text": response_text},
             }
 
+        elif action == "find_ev_charge_points_locations":
+            try:
+                result = athena_tool.find_ev_charge_points_locations(**input_params)
+            except Exception as e:
+                print(traceback.print_exc())
+                return {
+                    "status": "error",
+                    "content": {"text": str(e)},
+                }
+
+            if not result["success"]:
+                return {
+                    "status": "error",
+                    "content": {"text": f"Error executing query: {result['error']}"},
+                }
+
+            # Format the response
+            response_text = f"Function executed successfully. Full result available at {result['file']}. First rows below\n\n{result['data_head']}"
+
+            return {
+                "status": "success",
+                "content": {"text": response_text},
+            }
+
         else:
             return {
                 "status": "error",

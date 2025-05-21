@@ -79,6 +79,39 @@ athena_query = {
     }
 }
 
+find_ev_charge_points_locations = {
+    "toolSpec": {
+        "name": "find_ev_charge_points_locations",
+        "description": """Helper function to query the best charging point locations.
+- Results are returned as CSV stored in s3 that can be further processed or analyzed with the code interpreter tool.
+""",
+        "inputSchema": {
+            "json": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "description": "The action to perform: e.g. 'find_ev_charge_points_locations'",
+                        "enum": [
+                            "list_poi_categories",
+                            "find_ev_charge_points_locations",
+                        ],
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "The SQL query to execute (required for 'execute_query' action)",
+                    },
+                    "database": {
+                        "type": "string",
+                        "description": "The Athena database to query (required for 'execute_query' action)",
+                    },
+                },
+                "required": ["action"],
+            }
+        },
+    }
+}
+
 code_interpreter = {
     "toolSpec": {
         "name": "code_interpreter",
