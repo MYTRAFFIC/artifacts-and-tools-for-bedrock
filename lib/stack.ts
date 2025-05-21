@@ -280,6 +280,37 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
       });
     }
 
+    let databaseDocsTool: lambda.IFunction | undefined;
+    if (props.config.databaseDocsTool?.enabled) {
+      const databaseDocsLogGroup = new logs.LogGroup(this, "DatabaseDocsLogGroup", {
+        retention: logs.RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      });
+    
+      databaseDocsTool = new lambda.Function(
+        this,
+        "DatabaseDocsTool",
+        {
+          runtime: lambda.Runtime.PYTHON_3_11, // or 3.13 if preferred
+          handler: "index.handler", // points to your index.py file
+          code: lambda.Code.fromAsset(
+            path.join(__dirname, "./tools/database-docs")
+          ),
+          architecture: lambdaArchitecture,
+          timeout: cdk.Duration.seconds(30), // Even shorter timeout since it's just docs
+          memorySize: 256, // Can likely be even smaller (128MB)
+          logGroup: databaseDocsLogGroup,
+          environment: {
+            // Add any environment variables if needed
+          },
+        }
+      );
+    
+      new cdk.CfnOutput(this, "DatabaseDocsToolArn", {
+        value: databaseDocsTool.functionArn,
+      });
+    }
+
     if (props.config.playground?.enabled) {
       const playground = new Playground(this, "Playground", {
         config: props.config,
@@ -290,6 +321,7 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
         codeInterpreterTool,
         webSearchTool,
         athenaQueryTool,
+        databaseDocsTool,
         athenaWorkgroup: props.config.athenaQueryTool?.athenaWorkgroup,
       });
 

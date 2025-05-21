@@ -1,3 +1,61 @@
+database_docs = {
+    "toolSpec": {
+        "name": "database_docs",
+        "description": """Provides comprehensive documentation about available databases, tables, and their relationships to help formulate effective queries.
+Key capabilities:
+- Explore the complete data model before running queries with athena_query
+- Get detailed information about database tables including schemas, key columns, and partitioning
+- Understand relationships between tables and common join patterns
+- Discover example queries for common analytical tasks
+- Search for relevant tables based on keywords in names or descriptions
+- Get suggested queries for specific analytical tasks based on data model
+
+Best practices for spatial data analysis:
+1. First use this tool to understand the data model and available tables
+2. Look for common join patterns and example queries relevant to your task
+3. Examine table partitioning schemes to optimize query performance
+4. Then use athena_query to execute your refined queries
+
+Common use cases:
+- Understanding available data sources for a new analysis
+- Finding tables containing specific metrics or dimensions
+- Learning how geographical entities relate to each other
+- Getting schema details before writing complex joins
+""",
+        "inputSchema": {
+            "json": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "description": "The action to perform. Options: 'get_database_overview' (list all databases), 'get_database_info' (get details for one database), 'get_table_info' (get schema for specific table), 'search_tables' (find tables by keyword), 'get_common_joins' (list useful join patterns), 'get_task_templates' (get templates for common tasks), 'suggest_query_for_task' (get suggested query for analytical task)",
+                        "enum": [
+                            "get_database_overview",
+                            "get_database_info",
+                            "get_table_info",
+                            "search_tables",
+                            "get_common_joins",
+                        ],
+                    },
+                    "database": {
+                        "type": "string",
+                        "description": "Required for 'get_database_info' and 'get_table_info'. Name of database to inspect (e.g., 'pipeline_data_v2', 'geography')",
+                    },
+                    "table": {
+                        "type": "string",
+                        "description": "Required for 'get_table_info'. Name of table to inspect (e.g., 'average_vehicle_flow_by_day', 'neighborhoods')",
+                    },
+                    "keyword": {
+                        "type": "string",
+                        "description": "Required for 'search_tables'. Keyword to search in table names/descriptions (e.g., 'vehicle', 'traffic', 'geo')",
+                    },
+                },
+                "required": ["action"],
+            }
+        },
+    }
+}
+
 athena_query = {
     "toolSpec": {
         "name": "athena_query",
@@ -9,17 +67,6 @@ athena_query = {
 - For large datasets, consider using LIMIT to restrict the number of rows returned.
 - Include appropriate WHERE clauses to filter data when possible particularly using partitioning columns to avoid large queries.
 - For complex queries, break them down into simpler steps and explain your approach.
-- We have some normalized columns in all our datasets:
-    - country: always has the following uppercase format: BE, DE, FR, ES, IT, GB, NL
-    - day: 2024-03-01
-    - month: 2024-03
-    - week: 2025-05-12: a week is represented by the date of the Monday of this week
-    - polygon_type: "neighborhood", "store", "shopping_center" (like a store but which greater area), "shopping_area" (even larger than a shopping_center, contains many stores), "custom" (you can probably ignore this category)
-    - flow_kind: always use the value "all" by default
-    - _4326 columns always contain a WKT representation of a geometry in lat lon coordinates
-    - in table that contain flows, the "adjusted_*" column is the one to consider if available, since it is the value after applying our algorithms.
-- Please avoid at all costs doing geographical queries on a column with "%[keyword]%": the risk of false positives is too high (ex %Paris% may contain many places in France not close at all to Paris)
-- For geographical join we either have lat, lon columns or a reference to a neighborhood_id. Our geographies are divided into four types of nested entities. The lowest level is the `road_tile`, which form `neighborhood`, which are located within `city` which are within `adjustment_zone`. All of these entities have a unique ID to reference them in other tables (similar to a foreign key). Definitions for `neighborhood`, `city` and `adjustment_zone` can be found in the `geography` database. Relationships between those entities can be found in the `pipeline_data_v2.polygon_hierarchy` table where each nested entity has a link to the parent containing it.
 """,
         "inputSchema": {
             "json": {
@@ -27,12 +74,9 @@ athena_query = {
                 "properties": {
                     "action": {
                         "type": "string",
-                        "description": "The action to perform: 'execute_query', 'list_databases', 'list_tables', or 'get_table_schema'",
+                        "description": "The action to perform: 'execute_query'",
                         "enum": [
                             "execute_query",
-                            "list_databases",
-                            "list_tables",
-                            "get_table_schema",
                         ],
                     },
                     "query": {
@@ -41,11 +85,7 @@ athena_query = {
                     },
                     "database": {
                         "type": "string",
-                        "description": "The Athena database to query (required for 'execute_query', 'list_tables', and 'get_table_schema' actions)",
-                    },
-                    "table": {
-                        "type": "string",
-                        "description": "The table name (required for 'get_table_schema' action)",
+                        "description": "The Athena database to query (required for 'execute_query' action)",
                     },
                 },
                 "required": ["action"],
@@ -132,6 +172,7 @@ web_search = {
 
 class ConverseSpecification:
     def __init__(self):
+        self.database_docs = database_docs
         self.code_interpreter = code_interpreter
         self.web_search = web_search
         self.athena_query = athena_query
