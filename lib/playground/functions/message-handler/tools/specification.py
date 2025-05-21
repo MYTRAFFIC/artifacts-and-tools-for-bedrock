@@ -28,26 +28,10 @@ Common use cases:
                 "properties": {
                     "action": {
                         "type": "string",
-                        "description": "The action to perform. Options: 'get_database_overview' (list all databases), 'get_database_info' (get details for one database), 'get_table_info' (get schema for specific table), 'search_tables' (find tables by keyword), 'get_common_joins' (list useful join patterns), 'get_task_templates' (get templates for common tasks), 'suggest_query_for_task' (get suggested query for analytical task)",
+                        "description": "The action to perform : 'get_documentation' (read all doc)",
                         "enum": [
-                            "get_database_overview",
-                            "get_database_info",
-                            "get_table_info",
-                            "search_tables",
-                            "get_common_joins",
+                            "get_documentation",
                         ],
-                    },
-                    "database": {
-                        "type": "string",
-                        "description": "Required for 'get_database_info' and 'get_table_info'. Name of database to inspect (e.g., 'pipeline_data_v2', 'geography')",
-                    },
-                    "table": {
-                        "type": "string",
-                        "description": "Required for 'get_table_info'. Name of table to inspect (e.g., 'average_vehicle_flow_by_day', 'neighborhoods')",
-                    },
-                    "keyword": {
-                        "type": "string",
-                        "description": "Required for 'search_tables'. Keyword to search in table names/descriptions (e.g., 'vehicle', 'traffic', 'geo')",
                     },
                 },
                 "required": ["action"],
@@ -67,6 +51,7 @@ athena_query = {
 - For large datasets, consider using LIMIT to restrict the number of rows returned.
 - Include appropriate WHERE clauses to filter data when possible particularly using partitioning columns to avoid large queries.
 - For complex queries, break them down into simpler steps and explain your approach.
+- When performing a cross join, the smaller dataset should be always right
 """,
         "inputSchema": {
             "json": {

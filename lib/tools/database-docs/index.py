@@ -26,95 +26,12 @@ def handler(event, context):
         docs_tool = DatabaseDocumentationTool()
 
         # Execute the requested action
-        if action == "get_database_overview":
-            overview = docs_tool.get_database_overview()
+        if action == "get_documentation":
+            documentation = docs_tool.get_documentation()
             return {
                 "status": "success",
                 "content": {
-                    "text": f"Here's an overview of available databases:\n{overview}",
-                },
-            }
-
-        elif action == "get_database_info":
-            database = input_params.get("database")
-            if not database:
-                return {
-                    "status": "error",
-                    "content": {
-                        "text": "Database name is required for get_database_info action"
-                    },
-                }
-
-            info = docs_tool.get_database_info(database)
-            if "error" in info:
-                return {
-                    "status": "error",
-                    "content": {"text": info["error"]},
-                }
-
-            return {
-                "status": "success",
-                "content": {
-                    "text": f"Here's detailed information about database '{database}':\n{info}",
-                },
-            }
-
-        elif action == "get_table_info":
-            database = input_params.get("database")
-            table = input_params.get("table")
-
-            if not database or not table:
-                return {
-                    "status": "error",
-                    "content": {
-                        "text": "Both database and table names are required for get_table_info action"
-                    },
-                }
-
-            info = docs_tool.get_table_info(database, table)
-            if "error" in info:
-                return {
-                    "status": "error",
-                    "content": {"text": info["error"]},
-                }
-
-            return {
-                "status": "success",
-                "content": {
-                    "text": f"Here's detailed information about table '{table}' in database '{database}':\n{info}",
-                },
-            }
-
-        elif action == "search_tables":
-            keyword = input_params.get("keyword")
-            if not keyword:
-                return {
-                    "status": "error",
-                    "content": {"text": "Keyword is required for search_tables action"},
-                }
-
-            results = docs_tool.search_tables(keyword)
-            if not results:
-                return {
-                    "status": "success",
-                    "content": {
-                        "text": f"No tables found matching keyword '{keyword}'"
-                    },
-                }
-
-            return {
-                "status": "success",
-                "content": {
-                    "text": f"Found {len(results)} tables matching keyword '{keyword}':\n{results}",
-                },
-            }
-
-        elif action == "get_common_joins":
-            joins = docs_tool.get_common_joins()
-            return {
-                "status": "success",
-                "content": {
-                    "text": f"Here are some common join patterns between tables:\n{joins}",
+                    "text": f"Full Documentation of tables: {documentation}",
                 },
             }
 
