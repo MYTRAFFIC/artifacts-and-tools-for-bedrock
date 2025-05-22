@@ -137,7 +137,7 @@ npx cdk bootstrap aws://{targetAccountId}/{targetRegion}
 You can now deploy by running:
 
 ```bash
-npx cdk deploy
+make deploy
 ```
 You can view the progress of your CDK deployment in the [CloudFormation console](https://console.aws.amazon.com/cloudformation/home) in the selected region.
 
@@ -149,6 +149,12 @@ Outputs:
 ArtifactsAndToolsStack.UserInterfaceDomainName = https://dxxxxxxxxxxxxx.cloudfront.net
 ArtifactsAndToolsStack.CognitoUserPool = https://xxxxx.console.aws.amazon.com/cognito/v2/
 ...
+```
+
+you can view logs with 
+
+```bash
+make aws-logs
 ```
 
 **Step 6.** Open the generated **CognitoUserPool** Link from outputs above i.e. `https://xxxxx.console.aws.amazon.com/cognito/v2/idp/user-pools/xxxxx_XXXXX/users?region=xxxxx`
