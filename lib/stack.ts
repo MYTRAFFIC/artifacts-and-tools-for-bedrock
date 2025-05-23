@@ -247,6 +247,15 @@ export class ArtifactsAndToolsStack extends cdk.Stack {
 
       athenaQueryTool.addToRolePolicy(
         new iam.PolicyStatement({
+          actions: ["lambda:InvokeFunction"],
+          resources: [
+            "arn:aws:lambda:eu-central-1:360749485620:function:H3AthenaUDF-H3AthenaHandler051F4D89-gp4XQykHc6R1",
+          ],
+        })
+      );
+
+      athenaQueryTool.addToRolePolicy(
+        new iam.PolicyStatement({
           actions: ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation"],
           resources: ["*"],
         })
